@@ -7,7 +7,6 @@ import (
 	"log"
 	"path/filepath"
 
-	v1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/client-go/kubernetes"
 	_ "k8s.io/client-go/plugin/pkg/client/auth"
@@ -37,27 +36,19 @@ func main() {
 	}
 	count1 := countSa(clientset, "")
 	fmt.Printf("Count of SA : %d ", count1)
-
-	createdSA := &v1.ServiceAccount{
-		ObjectMeta: metav1.ObjectMeta{
-			Name:      "seitosan",
-			Namespace: "default",
-		},
-	}
-	result, err := clientset.CoreV1().ServiceAccounts("default").Create(context.TODO(), createdSA, metav1.CreateOptions{})
-	if err != nil {
-		log.Println(err)
-	}
-	fmt.Printf("Created sa %q.\n", result.GetObjectMeta().GetName())
-
+	createSa(clientset, "default", "seitosan")
 	count2 := countSa(clientset, "")
 	fmt.Printf("Count of SA : %d ", count2)
 	name, createdTime := getSa(clientset, "default", "seitosan")
 	fmt.Println(name + " Created at " + createdTime.String())
-
-	err = clientset.CoreV1().ServiceAccounts("default").Delete(context.TODO(), "seitosan", metav1.DeleteOptions{})
+	eventList, err := clientset.CoreV1().Events("").List(context.TODO(), metav1.ListOptions{
+		TypeMeta: metav1.TypeMeta{
+			Kind: "ServiceAccount",
+		},
+	})
 	if err != nil {
-		panic(err)
+		log.Panic(err)
 	}
-
+	fmt.Println(eventList)
+	deleteSa(clientset, "default", "seitosan")
 }
