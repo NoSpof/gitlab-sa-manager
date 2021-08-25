@@ -35,11 +35,8 @@ func main() {
 	if err != nil {
 		panic(err.Error())
 	}
-	sa, err := clientset.CoreV1().ServiceAccounts("").List(context.TODO(), metav1.ListOptions{})
-	if err != nil {
-		panic(err)
-	}
-	fmt.Printf("%d servives accounts founded ", len(sa.Items))
+	count1 := countSa(clientset, "")
+	fmt.Printf("Count of SA : %d ", count1)
 
 	createdSA := &v1.ServiceAccount{
 		ObjectMeta: metav1.ObjectMeta{
@@ -53,17 +50,11 @@ func main() {
 	}
 	fmt.Printf("Created sa %q.\n", result.GetObjectMeta().GetName())
 
-	sa2, err := clientset.CoreV1().ServiceAccounts("").List(context.TODO(), metav1.ListOptions{})
-	if err != nil {
-		panic(err)
-	}
-	fmt.Printf("%d servives accounts founded ", len(sa2.Items))
+	count2 := countSa(clientset, "")
+	fmt.Printf("Count of SA : %d ", count2)
+	name, createdTime := getSa(clientset, "default", "seitosan")
+	fmt.Println(name + " Created at " + createdTime.String())
 
-	saCreated, err := clientset.CoreV1().ServiceAccounts("default").Get(context.TODO(), "seitosan", metav1.GetOptions{})
-	if err != nil {
-		panic(err)
-	}
-	fmt.Println(saCreated.Secrets)
 	err = clientset.CoreV1().ServiceAccounts("default").Delete(context.TODO(), "seitosan", metav1.DeleteOptions{})
 	if err != nil {
 		panic(err)
