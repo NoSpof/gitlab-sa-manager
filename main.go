@@ -39,7 +39,7 @@ func main() {
 	if err != nil {
 		panic(err)
 	}
-	fmt.Printf("%d servives acclunts founded ", len(sa.Items))
+	fmt.Printf("%d servives accounts founded ", len(sa.Items))
 
 	createdSA := &v1.ServiceAccount{
 		ObjectMeta: metav1.ObjectMeta{
