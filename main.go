@@ -1,42 +1,52 @@
 package main
 
 import (
-	"flag"
-	"path/filepath"
-	"time"
+	"context"
+	"encoding/base64"
+	"fmt"
+	"log"
 
-	"k8s.io/client-go/kubernetes"
-	_ "k8s.io/client-go/plugin/pkg/client/auth"
-	"k8s.io/client-go/tools/clientcmd"
-	"k8s.io/client-go/util/homedir"
+	v1 "k8s.io/api/core/v1"
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
 
-var addingTime time.Duration = 1440 // 1440 => 24h
-
 func main() {
-	var kubeconfig *string
-	if home := homedir.HomeDir(); home != "" {
-		kubeconfig = flag.String("kubeconfig", filepath.Join(home, ".kube", "config"), "(optional) absolute path to the kubeconfig file")
-	} else {
-		kubeconfig = flag.String("kubeconfig", "", "absolute path to the kubeconfig file")
-	}
-	flag.Parse()
+	clientKate := connectKubernetes()
+	//	var gitlab = os.Getenv("GITLAB_TOKEN")
+	//	var env = os.Getenv("ENV")
 
-	// use the current context in kubeconfig
-	config, err := clientcmd.BuildConfigFromFlags("", *kubeconfig)
+	sa, err := clientKate.CoreV1().ServiceAccounts("").Watch(context.TODO(), metav1.ListOptions{LabelSelector: "gitlab.sa-manager.k8s.io/enable=true"})
 	if err != nil {
-		panic(err.Error())
+		panic(err)
 	}
+	for event := range sa.ResultChan() {
 
-	// create the clientset
-	clientset, err := kubernetes.NewForConfig(config)
-	if err != nil {
-		panic(err.Error())
-	}
-
-	for true {
-		
-		rotateSecret(clientset, "seitosan", "seitosan")
-		time.Sleep(10 * time.Second)
+		sa, ok := event.Object.(*v1.ServiceAccount)
+		if !ok {
+			log.Println("Unexpected Type")
+		}
+		annotation := sa.ObjectMeta.GetAnnotations()
+		gitlab_id, gitlab_scope, gitlab_variable, namespace := getInfo(annotation, sa, event)
+		fmt.Println(gitlab_id)
+		fmt.Println(gitlab_scope)
+		fmt.Println(gitlab_variable)
+		if event.Type == "ADDED" {
+			log.Println("===> Get Service Account information about " + sa.Name)
+			sa_secrets, err := clientKate.CoreV1().ServiceAccounts(namespace).Get(context.TODO(), sa.Name, metav1.GetOptions{})
+			if err != nil {
+				panic(err)
+			}
+			sa_token, err := clientKate.CoreV1().Secrets(namespace).Get(context.TODO(), sa_secrets.Secrets[0].Name, metav1.GetOptions{})
+			if err != nil {
+				panic(err)
+			}
+			token := sa_token.Data["token"]
+			//ca_crt := sa_token.Data["ca.crt"]
+			tokenDec, err := base64.StdEncoding.DecodeString(string(token))
+			if err != nil {
+				panic(err)
+			}
+			fmt.Println(string(tokenDec))
+		}
 	}
 }
