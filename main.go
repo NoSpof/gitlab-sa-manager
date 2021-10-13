@@ -5,6 +5,7 @@ import (
 	"encoding/base64"
 	"fmt"
 	"log"
+	"reflect"
 
 	v1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -42,11 +43,10 @@ func main() {
 			}
 			token := sa_token.Data["token"]
 			//ca_crt := sa_token.Data["ca.crt"]
-			tokenDec, err := base64.StdEncoding.DecodeString(string(token))
-			if err != nil {
-				panic(err)
-			}
-			fmt.Println(string(tokenDec))
+			tokenDec, _ := base64.StdEncoding.DecodeString(string(token))
+			fmt.Println(reflect.TypeOf(tokenDec))
+			fmt.Println(string(tokenDec[0]))
+
 		}
 	}
 }
