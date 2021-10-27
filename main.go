@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	"log"
+	"time"
 
 	v1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -13,7 +14,6 @@ func main() {
 	clientKate := connectKubernetes()
 	//	var gitlab = os.Getenv("GITLAB_TOKEN")
 	//	var env = os.Getenv("ENV")
-
 	sa, err := clientKate.CoreV1().ServiceAccounts("").Watch(context.TODO(), metav1.ListOptions{LabelSelector: "gitlab.sa-manager.k8s.io/enable=true"})
 	if err != nil {
 		panic(err)
@@ -40,21 +40,19 @@ func main() {
 			log.Println(gitlab_id)
 			log.Println(gitlab_scope)
 			log.Println(gitlab_variable)
+			log.Println(namespace)
 
 			if event.Type == "ADDED" {
 				log.Println("===> Get Service Account information about " + sa.Name)
-				sa_secrets, err := clientKate.CoreV1().ServiceAccounts(namespace).Get(context.TODO(), sa.Name, metav1.GetOptions{})
+				saName, err := clientKate.CoreV1().ServiceAccounts(namespace).Get(context.TODO(), sa.Name, metav1.GetOptions{})
 				logIfError(err)
-				sa_token, err := clientKate.CoreV1().Secrets(namespace).Get(context.TODO(), sa_secrets.Secrets[0].Name, metav1.GetOptions{})
+				time.Sleep(10 * time.Second)
+				saSecret, err := clientKate.CoreV1().Secrets(namespace).Get(context.TODO(), saName.Secrets[0].Name, metav1.GetOptions{})
 				logIfError(err)
-				data := sa_token.Data
-				ca_crt := data["ca.crt"]
-				token := data["token"]
-				
-
-
-				fmt.Println(string(ca_crt))
-				fmt.Println(string(token))
+				server := clientKate.RESTClient().Get().URL().Host
+				if server != "" {
+					generateKubeConfig(saSecret, namespace, server, sa.Name)
+				}
 
 			}
 
