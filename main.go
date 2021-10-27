@@ -2,10 +2,8 @@ package main
 
 import (
 	"context"
-	"encoding/base64"
 	"fmt"
 	"log"
-	"reflect"
 
 	v1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -27,25 +25,38 @@ func main() {
 			log.Println("Unexpected Type")
 		}
 		annotation := sa.ObjectMeta.GetAnnotations()
-		gitlab_id, gitlab_scope, gitlab_variable, namespace := getInfo(annotation, sa, event)
-		fmt.Println(gitlab_id)
-		fmt.Println(gitlab_scope)
-		fmt.Println(gitlab_variable)
-		if event.Type == "ADDED" {
-			log.Println("===> Get Service Account information about " + sa.Name)
-			sa_secrets, err := clientKate.CoreV1().ServiceAccounts(namespace).Get(context.TODO(), sa.Name, metav1.GetOptions{})
-			if err != nil {
-				panic(err)
+		switch annotation["sa-manager.k8s.io"] {
+		case "gitlab":
+			fmt.Println("Repository destination gitlab")
+		case "github":
+			fmt.Println("Repository destination github")
+		case "azDevops":
+			fmt.Println("Repository destination Azure Devops")
+		default:
+			log.Println("Annotation sa-manager.k8s.io must be set with : gitlab github or azDevops parameter")
+		}
+		if annotation["sa-manager.k8s.io"] != "" {
+			gitlab_id, gitlab_scope, gitlab_variable, namespace := getInfoFromGitlab(annotation, sa, event)
+			log.Println(gitlab_id)
+			log.Println(gitlab_scope)
+			log.Println(gitlab_variable)
+
+			if event.Type == "ADDED" {
+				log.Println("===> Get Service Account information about " + sa.Name)
+				sa_secrets, err := clientKate.CoreV1().ServiceAccounts(namespace).Get(context.TODO(), sa.Name, metav1.GetOptions{})
+				logIfError(err)
+				sa_token, err := clientKate.CoreV1().Secrets(namespace).Get(context.TODO(), sa_secrets.Secrets[0].Name, metav1.GetOptions{})
+				logIfError(err)
+				data := sa_token.Data
+				ca_crt := data["ca.crt"]
+				token := data["token"]
+				
+
+
+				fmt.Println(string(ca_crt))
+				fmt.Println(string(token))
+
 			}
-			sa_token, err := clientKate.CoreV1().Secrets(namespace).Get(context.TODO(), sa_secrets.Secrets[0].Name, metav1.GetOptions{})
-			if err != nil {
-				panic(err)
-			}
-			token := sa_token.Data["token"]
-			//ca_crt := sa_token.Data["ca.crt"]
-			tokenDec, _ := base64.StdEncoding.DecodeString(string(token))
-			fmt.Println(reflect.TypeOf(tokenDec))
-			fmt.Println(string(tokenDec[0]))
 
 		}
 	}

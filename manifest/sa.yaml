@@ -5,3 +5,8 @@ metadata:
   namespace: default
   labels:
     gitlab.sa-manager.k8s.io/enable: "true"
+  annotations:
+    sa-manager.k8s.io: "gitlab"
+    gitlab.sa-manager.k8s.io/id: "666"
+    gitlab.sa-manager.k8s.io/scope: "projects"
+    gitlab.sa-manager.k8s.io/variable: "AKS_SEITOSAN"

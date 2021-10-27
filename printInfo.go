@@ -8,7 +8,7 @@ import (
 	"k8s.io/apimachinery/pkg/watch"
 )
 
-func getInfo(annotation map[string]string, sa *v1.ServiceAccount, event watch.Event) (string, string, string, string) {
+func getInfoFromGitlab(annotation map[string]string, sa *v1.ServiceAccount, event watch.Event) (string, string, string, string) {
 	gitlab_id := annotation["gitlab.sa-manager.k8s.io/id"]
 	gitlab_scope := annotation["gitlab.sa-manager.k8s.io/scope"]
 	gitlab_variable := annotation["gitlab.sa-manager.k8s.io/variable"]
