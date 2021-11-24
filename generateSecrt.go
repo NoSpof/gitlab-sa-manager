@@ -3,7 +3,6 @@ package main
 import (
 	"bytes"
 	"encoding/json"
-	"fmt"
 	"log"
 	"net/http"
 	"os"
@@ -20,7 +19,7 @@ func generateSecret(annotation map[string]string, sa *v1.ServiceAccount, event w
 	if annotation["sa-manager.k8s.io"] != "" {
 		switch annotation["sa-manager.k8s.io"] {
 		case "gitlab":
-			fmt.Println("Repository destination gitlab")
+			log.Println("Repository destination gitlab")
 			gitlab_id := annotation["gitlab.sa-manager.k8s.io/id"]
 			gitlab_scope := annotation["gitlab.sa-manager.k8s.io/scope"]
 			gitlab_variable := annotation["gitlab.sa-manager.k8s.io/variable"]
@@ -37,7 +36,7 @@ func generateSecret(annotation map[string]string, sa *v1.ServiceAccount, event w
 		case "github":
 			//var github_baseUrl = os.Getenv("GITHUB_BASEURL")
 			var github_baseUrl = "https://api.github.com/"
-			fmt.Println("Repository destination github")
+			log.Println("Repository destination github")
 			github_owner := annotation["github.sa-manager.k8s.io/owner"]
 			github_repo := annotation["github.sa-manager.k8s.io/repository"]
 			github_variable := annotation["github.sa-manager.k8s.io/variable"]
@@ -75,10 +74,10 @@ func generateSecret(annotation map[string]string, sa *v1.ServiceAccount, event w
 					panic(err)
 				}
 
-				fmt.Println(resp.StatusCode)
+				log.Println(resp.StatusCode)
 			}
 		case "azDevops":
-			fmt.Println("Repository destination Azure Devops")
+			log.Println("Repository destination Azure Devops")
 		default:
 			log.Println("Annotation sa-manager.k8s.io must be set with : gitlab github or azDevops parameter")
 		}
