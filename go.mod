@@ -1,4 +1,4 @@
-module nospof.cloud/gitlab-sa-manager
+module nospof.cloud/sa-manager
 
 go 1.17
 

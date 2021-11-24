@@ -33,6 +33,7 @@ func generateSecret(annotation map[string]string, sa *v1.ServiceAccount, event w
 				log.Println("Variable Gitlab : " + gitlab_variable)
 				log.Println("Namespace : " + namespace)
 			}
+			sendToGitlab(gitlab_id, gitlab_scope, gitlab_variable, namespace)
 		case "github":
 			//var github_baseUrl = os.Getenv("GITHUB_BASEURL")
 			var github_baseUrl = "https://api.github.com/"

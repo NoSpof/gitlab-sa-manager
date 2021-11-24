@@ -6,11 +6,16 @@ metadata:
   labels:
     gitlab.sa-manager.k8s.io/enable: "true"
   annotations:
-    sa-manager.k8s.io: "github"
-    github.sa-manager.k8s.io/owner: "NoSpof"
-    github.sa-manager.k8s.io/repository: "sa-manager"
-    github.sa-manager.k8s.io/scope: "repo"
-    github.sa-manager.k8s.io/variable: "AKS_SEITOSAN"
+    sa-manager.k8s.io: "gitlab"
+    #github.sa-manager.k8s.io/owner: "NoSpof"
+    #github.sa-manager.k8s.io/repository: "sa-manager"
+    #github.sa-manager.k8s.io/scope: "repo"
+    #github.sa-manager.k8s.io/variable: "AKS_SEITOSAN"
+    gitlab.sa-manager.k8s.io/id: "31418522"
+    gitlab.sa-manager.k8s.io/scope: "projects"
+    gitlab.sa-manager.k8s.io/variable: "AKS_DEV_KUBECONFIG"
+
+
 ---
 apiVersion: rbac.authorization.k8s.io/v1
 kind: Role
