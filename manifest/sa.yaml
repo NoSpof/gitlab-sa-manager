@@ -4,7 +4,7 @@ metadata:
   name:  seitosan
   namespace: default
   labels:
-    gitlab.sa-manager.k8s.io/enable: "true"
+    sa-manager.k8s.io/enable: "true"
   annotations:
     sa-manager.k8s.io: "gitlab"
     #github.sa-manager.k8s.io/owner: "NoSpof"
