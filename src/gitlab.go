@@ -3,8 +3,8 @@ package main
 import (
 	"bytes"
 	"encoding/json"
-	"fmt"
 	"io/ioutil"
+	"log"
 	"net/http"
 	"os"
 	"strings"
@@ -45,10 +45,14 @@ func sendToGitlab(gitlab_id string, gitlab_scope string, gitlab_variable string,
 	resp, err := http.DefaultClient.Do(req)
 	logIfError(err)
 	defer resp.Body.Close()
-	fmt.Println("response Status:", resp.Status)
-	fmt.Println("response Headers:", resp.Header)
-	bodyResp, _ := ioutil.ReadAll(resp.Body)
-	fmt.Println("response Body:", string(bodyResp))
+	log.Println("response Status:", resp.Status)
+	var verbose = os.Getenv("VERBOSITY")
+	if verbose == "debug" {
+		log.Println("response Headers:", resp.Header)
+		bodyResp, _ := ioutil.ReadAll(resp.Body)
+		log.Println("response Body:", string(bodyResp))
+	}
+
 }
 
 func checkIfVarExist(gitlab_id string, gitlab_scope string, gitlab_variable string) bool {
@@ -67,7 +71,7 @@ func checkIfVarExist(gitlab_id string, gitlab_scope string, gitlab_variable stri
 	resp, err := http.DefaultClient.Do(req)
 	logIfError(err)
 	var compareStatus = strings.Split(resp.Status, " ")
-	fmt.Println(compareStatus[0])
+	log.Println(compareStatus[0])
 	if compareStatus[0] == "200" {
 		status = true
 	}
