@@ -2,7 +2,6 @@ package main
 
 import (
 	"context"
-	"fmt"
 	"log"
 
 	v1 "k8s.io/api/core/v1"
@@ -12,10 +11,8 @@ import (
 func main() {
 	clientKate := connectKubernetes()
 
-	sa, err := clientKate.CoreV1().ServiceAccounts("").Watch(context.TODO(), metav1.ListOptions{LabelSelector: "gitlab.sa-manager.k8s.io/enable=true"})
-	if err != nil {
-		panic(err)
-	}
+	sa, err := clientKate.CoreV1().ServiceAccounts("").Watch(context.TODO(), metav1.ListOptions{LabelSelector: "sa-manager/enabled=true"})
+	logIfError(err)
 	for event := range sa.ResultChan() {
 
 		sa, ok := event.Object.(*v1.ServiceAccount)
@@ -23,7 +20,6 @@ func main() {
 			log.Println("Unexpected Type")
 		}
 		annotation := sa.ObjectMeta.GetAnnotations()
-		fmt.Println(event.Type)
 		switch event.Type {
 		case "ADDED":
 			generateSaAuth(sa, clientKate)

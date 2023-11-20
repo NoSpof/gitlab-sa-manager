@@ -2,9 +2,8 @@ apiVersion: v1
 kind: ServiceAccount
 metadata:
   name:  seitosan
-  namespace: default
   labels:
-    sa-manager.k8s.io/enable: "true"
+    sa-manager/enabled: "true"
   annotations:
     sa-manager.k8s.io: "gitlab"
     #github.sa-manager.k8s.io/owner: "NoSpof"
